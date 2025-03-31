@@ -1,18 +1,24 @@
 from flask import Flask, render_template, Response, jsonify, request
 import cv2
 import mediapipe as mp
-import pyautogui
-from waitress import serve
+import os
 
 app = Flask(__name__)
+
+# Check if running on Render (No GUI support)
+ON_RENDER = os.environ.get("RENDER") is not None
+
+if not ON_RENDER:
+    import pyautogui
+    screen_width, screen_height = pyautogui.size()
+else:
+    screen_width = screen_height = None  # Dummy values
 
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands()
 
-# Get screen size
-screen_width, screen_height = pyautogui.size()
 camera = cv2.VideoCapture(0)
 
 mode = "None"  
@@ -33,7 +39,7 @@ def generate_frames():
             output_hands = hands.process(rgb_image)
             all_hands = output_hands.multi_hand_landmarks
 
-            if all_hands:
+            if all_hands and not ON_RENDER:
                 for hand in all_hands:
                     mp_drawing.draw_landmarks(image, hand, mp_hands.HAND_CONNECTIONS)
                     landmarks = hand.landmark
@@ -114,5 +120,8 @@ def game_action():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    
+    if ON_RENDER:
+        from waitress import serve
+        serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    else:
+        app.run(debug=True)
