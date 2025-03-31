@@ -1,5 +1,4 @@
 Flask
 waitress
-opencv-python
 mediapipe
-pyautogui
+opencv-python
