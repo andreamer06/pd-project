@@ -30,15 +30,13 @@ function setMode(mode) {
 // Make function accessible globally
 window.setMode = setMode;
 
-
 function updateStatus() {
-    fetch('/action')
+    fetch('/game_action')  // Fixed the endpoint from "/action" to "/game_action"
         .then(response => response.json())
-        .then(data => document.getElementById('status').innerText = "Status: " + data.action);
+        .then(data => document.getElementById('status').innerText = "Status: " + data.direction);
 }
 
 setInterval(updateStatus, 300);
-
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Script.js loaded!");
@@ -46,4 +44,3 @@ document.addEventListener("DOMContentLoaded", () => {
     // Call setMode to initialize game mode
     setMode("none"); // or "camera" based on your needs
 });
-
