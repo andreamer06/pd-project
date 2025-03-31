@@ -21,7 +21,7 @@
     <div class="container">
         <div class="camera-container">
             <h2>Live Camera</h2>
-            <img src="{{ url_for('video') }}" id="videoFeed">
+            <video id="videoFeed" autoplay playsinline></video> <!-- Video element to show the camera feed -->
         </div>
 
         <div class="game-area" id="gameArea" style="display: none;">
