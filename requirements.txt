@@ -2,3 +2,4 @@ Flask
 waitress
 mediapipe
 opencv-python
+pyautogui
