@@ -2,6 +2,7 @@ from flask import Flask, render_template, Response, jsonify, request
 import cv2
 import mediapipe as mp
 import pyautogui
+from waitress import serve
 
 app = Flask(__name__)
 
