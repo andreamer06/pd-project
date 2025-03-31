@@ -122,6 +122,6 @@ def game_action():
 if __name__ == '__main__':
     if ON_RENDER:
         from waitress import serve
-        serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+        serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
     else:
         app.run(debug=True)
