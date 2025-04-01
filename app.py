@@ -106,10 +106,13 @@ def set_mode():
     return jsonify({"mode": mode})
 
 
-@app.route('/game_action')
+@app.route('/game_action', methods=['POST'])
 def game_action():
-    global current_action
-    return jsonify({"direction": current_action})
+    data = request.json
+    action = data.get("action", "None")
+    print(f"Gesture received: {action}")
+    return jsonify({"status": "received", "action": action})
+
 
 
 if __name__ == '__main__':
