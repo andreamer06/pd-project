@@ -21,7 +21,7 @@
     <div class="container">
         <div class="camera-container">
             <h2>Live Camera</h2>
-            <video id="videoFeed" autoplay playsinline></video> <!-- Video element to show the camera feed -->
+            <img src="{{ url_for('video') }}" id="videoFeed">
         </div>
 
         <div class="game-area" id="gameArea" style="display: none;">
@@ -31,5 +31,85 @@
 
     <h1 id="status"></h1>
     <script src="/static/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+
+<script>
+    const videoElement = document.getElementById('videoFeed');
+
+    // Request the camera access
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            videoElement.srcObject = stream;
+        })
+        .catch(error => {
+            console.error("Error accessing the camera", error);
+            alert("Camera access is required.");
+        });
+
+    // Load MediaPipe Hands
+    const hands = new Hands({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+        maxNumHands: 1,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+    });
+
+    hands.onResults(results => {
+        if (results.multiHandLandmarks) {
+            for (const landmarks of results.multiHandLandmarks) {
+                detectGesture(landmarks);
+            }
+        }
+    });
+
+    const videoCanvas = document.createElement("canvas");
+    const ctx = videoCanvas.getContext("2d");
+
+    function processVideo() {
+        if (!videoElement.videoWidth) {
+            requestAnimationFrame(processVideo);
+            return;
+        }
+
+        videoCanvas.width = videoElement.videoWidth;
+        videoCanvas.height = videoElement.videoHeight;
+        ctx.drawImage(videoElement, 0, 0, videoCanvas.width, videoCanvas.height);
+
+        hands.send({ image: videoCanvas });
+
+        requestAnimationFrame(processVideo);
+    }
+
+    videoElement.addEventListener("loadeddata", () => {
+        processVideo();
+    });
+
+    function detectGesture(landmarks) {
+        const thumbTip = landmarks[4];
+        const indexTip = landmarks[8];
+
+        // Measure distance between thumb and index finger
+        const dx = thumbTip.x - indexTip.x;
+        const dy = thumbTip.y - indexTip.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 0.05) {
+            console.log("Click Detected!");
+        }
+
+        // Send gesture data to backend (optional)
+        fetch("/game_action", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "click" })
+        });
+    }
+</script>
+
 </body>
 </html>
